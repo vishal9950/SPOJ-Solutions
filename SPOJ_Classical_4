@@ -1,0 +1,103 @@
+ONP - Transform the Expression
+#stack
+
+Transform the algebraic expression with brackets into RPN form (Reverse Polish Notation). Two-argument operators: +, -, *, /, ^ (priority from the lowest to the highest), brackets ( ). Operands: only letters: a,b,...,z. Assume that there is only one RPN form (no expressions like a*b*c).
+Input
+t [the number of expressions <= 100]
+expression [length <= 400]
+[other expressions]
+
+
+Text grouped in [ ] does not appear in the input file.
+Output
+The expressions in RPN form, one per line.
+
+
+Example
+Input:
+3
+(a+(b*c))
+((a+b)*(z+x))
+((a+t)*((b+(a+c))^(c+d)))
+
+Output:
+abc*+
+ab+zx+*
+at+bac++cd+^*
+
+Solution:
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+char rpn[400][100];
+static int k=0;
+char stack[400];
+int top=-1;
+char po;
+
+int main()
+{
+	int n,i,j;
+	scanf("%d",&n);
+	char str[400][n];
+	for(i=0;i<n;i++)
+	{
+        scanf("%s",str[i]);
+		buildTree(str[i]);
+	}
+	for(i=0;i<n;i++)
+    {
+        for(j=0;rpn[j][i]!='\0';j++)
+            printf("%c",rpn[j][i]);
+        printf("\n");
+    }
+}
+
+void buildTree(char str1[400])
+{
+    int i=0;
+    int j=0;
+    while(str1[i]!='\0')
+    {
+        if(str1[i]=='(')
+        {
+            while(str1[i+1]=='(')
+                    i++;
+        }
+        else if(str1[i]==')')
+        {
+            pop();
+            rpn[j][k]=po;
+            j++;
+        }
+        else
+        {
+            if((str1[i]!='+') && (str1[i]!='-') && (str1[i]!='*') && (str1[i]!='/') && (str1[i]!='^'))
+            {
+                rpn[j][k]=str1[i];
+                j++;
+            }
+            else
+            {
+                push(str1[i]);
+            }
+        }
+        i++;
+    }
+    k++;
+}
+
+void push(char a)
+{
+    stack[++top]=a;
+}
+
+void pop()
+{
+    po=stack[top];
+    top--;
+}
+
+
