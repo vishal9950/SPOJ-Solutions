@@ -1,0 +1,474 @@
+ARITH - Simple Arithmetics
+no tags 
+
+One part of the new WAP portal is also a calculator computing expressions with very long numbers. To make the output look better, the result is formated the same way as is it usually used with manual calculations.
+Your task is to write the core part of this calculator. Given two numbers and the requested operation, you are to compute the result and print it in the form specified below. With addition and subtraction, the numbers are written below each other. Multiplication is a little bit more complex: first of all, we make a partial result for every digit of one of the numbers, and then sum the results together.
+Input
+There is a single positive integer T on the first line of input (equal to about 1000). It stands for the number of expressions to follow. Each expression consists of a single line containing a positive integer number, an operator (one of +, - and *) and the second positive integer number. Every number has at most 500 digits. There are no spaces on the line. If the operation is subtraction, the second number is always lower than the first one. No number will begin with zero.
+Output
+For each expression, print two lines with two given numbers, the second number below the first one, last digits (representing unities) must be aligned in the same column. Put the operator right in front of the first digit of the second number. After the second number, there must be a horizontal line made of dashes (-).
+For each addition or subtraction, put the result right below the horizontal line, with last digit aligned to the last digit of both operands.
+For each multiplication, multiply the first number by each digit of the second number. Put the partial results one below the other, starting with the product of the last digit of the second number. Each partial result should be aligned with the corresponding digit. That means the last digit of the partial product must be in the same column as the digit of the second number. No product may begin with any additional zeros. If a particular digit is zero, the product has exactly one digit -- zero. If the second number has more than one digit, print another horizontal line under the partial results, and then print the sum of them.
+There must be minimal number of spaces on the beginning of lines, with respect to other constraints. The horizontal line is always as long as necessary to reach the left and right end of both numbers (and operators) directly below and above it. That means it begins in the same column where the leftmost digit or operator of that two lines (one below and one above) is. It ends in the column where is the rightmost digit of that two numbers. The line can be neither longer nor shorter than specified.
+Print one blank line after each test case, including the last one.
+Example
+Sample Input:
+4
+12345+67890
+324-111
+325*4405
+1234*4
+
+
+
+Sample Output:
+12345
++67890
+------
+ 80235
+
+ 324
+-111
+----
+ 213
+
+    325
+  *4405
+  -----
+   1625
+     0
+ 1300
+1300
+-------
+1431625
+
+1234
+  *4
+----
+4936
+
+
+
+Solution:
+
+#include<stdio.h>
+
+int main()
+{
+    int n;
+    scanf("%d",&n);
+    char expr[1005];
+    char op1[500],op2[500],aop;
+    int x=0;
+    while(n--)
+    {
+        while(x<500)
+    {
+        op1[x]='\0';
+        op2[x]='\0';
+        x++;
+    }
+        scanf("%s",expr);
+        int flag=0;
+        int j=0;
+        int i=0;
+        while(i<strlen(expr))
+        {
+            if(expr[i]=='+' || expr[i]=='-' || expr[i]=='*')
+            {
+                aop=expr[i];
+                flag=1;
+                j=-1;
+            }
+            else if(flag==0)
+            {
+                op1[j]=expr[i];
+            }
+            else
+            {
+                op2[j]=expr[i];
+            }
+            i++;
+            j++;
+        }
+        if(aop=='+')
+            add(op1,op2);
+        else if(aop=='-')
+            sub(op1,op2);
+        else
+            mul(op1,op2);
+    }
+}
+
+void add(char op1[], char op2[])
+{
+    int max=strlen(op1)>strlen(op2)?strlen(op1):strlen(op2);
+    int diff=strlen(op1)-strlen(op2);
+    int i;
+    printf(" ");
+    for(i=0;i<strlen(op1);i++)
+    {
+        if(diff < 0)
+        {
+            while(diff < 0)
+            {
+                printf(" ");
+                diff++;
+            }
+            i--;
+        }
+        else
+        {
+            printf("%c",op1[i]);
+        }
+    }
+    diff=strlen(op1)-strlen(op2);
+    printf("\n");
+    if(diff < 0)
+        printf("+");
+    for(i=0;i<strlen(op2);i++)
+    {
+        if(diff > 0)
+        {
+            while(diff > 0)
+            {
+                printf(" ");
+                diff--;
+            }
+            printf("+");
+            i--;
+        }
+        else
+        {
+            printf("%c",op2[i]);
+        }
+    }
+    printf("\n");
+    for(i=0;i<max+1;i++)
+    {
+        printf("-");
+    }
+    printf("\n");
+    int x;
+    char a[500], b[500];
+    for(i=strlen(op1)-1,x=0;i>=0;i--,x++)
+        a[x]=op1[i];
+    a[x]='\0';
+    for(i=strlen(op2)-1,x=0;i>=0;i--,x++)
+        b[x]=op2[i];
+    b[x]='\0';
+    strcpy(op1,a);
+    strcpy(op2,b);
+    if(strlen(op1) > strlen(op2))
+    {
+        while(strlen(op2)!=strlen(op1))
+        {
+            op2[strlen(op2)]='0';
+        }
+    }
+    else
+    {
+        while(strlen(op1)!=strlen(op2))
+        {
+            op1[strlen(op1)]='0';
+        }
+    }
+    int interm,carry=0;
+    x=0;
+    int j;
+    char res[500];
+    while(x<500)
+    {
+        res[x]='\0';
+        x++;
+    }
+    for(i=0;i<strlen(op1);i++)
+    {
+        interm = (op1[i]-'0') + (op2[i]-'0') + carry;
+        res[i] = (interm % 10)+ '0';
+        carry = interm / 10;
+    }
+     for(i=strlen(res)-1,j=0;i>=0;i--,j++)
+        a[j]=res[i];
+    a[j]='\0';
+    if(carry == 0)
+        printf(" %s",a);
+    else
+        printf("%d%s",carry,a);
+    printf("\n\n");
+    x=0;
+    while(x<500)
+    {
+        res[x]='\0';
+        op1[x]='\0';
+        op2[x]='\0';
+        a[x]='\0';
+        b[x]='\0';
+        x++;
+    }
+}
+
+void sub(char op1[], char op2[])
+{
+    int diff=strlen(op1)-strlen(op2);
+    if(diff>=0)
+    {
+        int i;
+    printf(" ");
+    for(i=0;i<strlen(op1);i++)
+    {
+        if(diff < 0)
+        {
+            while(diff < 0)
+            {
+                printf(" ");
+                diff++;
+            }
+            i--;
+        }
+        else
+        {
+            printf("%c",op1[i]);
+        }
+    }
+    diff=strlen(op1)-strlen(op2);
+    printf("\n");
+    for(i=0;i<strlen(op2);i++)
+    {
+        if(diff > 0)
+        {
+            while(diff > 0)
+            {
+                printf(" ");
+                diff--;
+            }
+            printf("-");
+            i--;
+        }
+        else
+        {
+            printf("%c",op2[i]);
+        }
+    }
+    printf("\n");
+    for(i=0;i<strlen(op1)+1;i++)
+    {
+        printf("-");
+    }
+    printf("\n");
+    int x;
+    char a[500], b[500];
+    for(i=strlen(op1)-1,x=0;i>=0;i--,x++)
+        a[x]=op1[i];
+    a[x]='\0';
+    for(i=strlen(op2)-1,x=0;i>=0;i--,x++)
+        b[x]=op2[i];
+    b[x]='\0';
+    strcpy(op1,a);
+    strcpy(op2,b);
+        while(strlen(op2)!=strlen(op1))
+        {
+            op2[strlen(op2)]='0';
+        }
+    int interm;
+    x=0;
+    char res[500];
+    while(x<500)
+    {
+        res[x]='\0';
+        x++;
+    }
+    int j;
+    for(i=0;i<strlen(op1);i++)
+    {
+        if(op1[i] < op2[i])
+        {
+            interm = (op1[i] - '0') + 10 - (op2[i] - '0');
+            op1[i+1]--;
+        }
+        else
+            interm = (op1[i] - '0') - (op2[i] - '0');
+        res[i] = interm + '0';
+    }
+    for(i=strlen(res)-1,j=0;i>=0;i--,j++)
+        a[j]=res[i];
+    a[j]='\0';
+    printf(" %s",a);
+    printf("\n\n");
+    x=0;
+    while(x<500)
+    {
+        res[x]='\0';
+        op1[x]='\0';
+        op2[x]='\0';
+        x++;
+    }
+    }
+}
+
+void mul(char op1[], char op2[])
+{
+    int max=strlen(op1)>strlen(op2)?strlen(op1):strlen(op2);
+    int diff=strlen(op1)-strlen(op2);
+    char a[500],b[500];
+    strcpy(a,op1);
+    strcpy(b,op2);
+    char res[500][1003];
+    char revres[500][1003];
+    int x,y;
+    for(x=0;x<500;x++)
+    {
+        for(y=0;y<1003;y++)
+        {
+            revres[x][y]='\0';
+            res[x][y]='\0';
+        }
+    }
+    char c[500], d[500];
+    int i,j,k,interm,carry=0;
+    for(i=strlen(a)-1,j=0;i>=0;i--,j++)
+        c[j]=a[i];
+    c[j]='\0';
+    for(i=strlen(b)-1,j=0;i>=0;i--,j++)
+        d[j]=b[i];
+    d[j]='\0';
+    strcpy(a,c);
+    strcpy(b,d);
+    i=0;
+    while(i<500)
+    {
+        c[i]='\0';
+        d[i]='\0';
+        i++;
+    }
+    for(i=0;i<strlen(b);i++,carry=0)
+    {
+        if(b[i]!='0')
+        {
+            for(j=0;j<strlen(a);j++)
+            {
+                interm = (b[i]-'0') * (a[j]-'0') + carry;
+                res[i][j] = (interm % 10) + '0';
+                carry = interm / 10;
+            }
+            if(carry!=0)
+            {
+                res[i][j]= carry + '0';
+                j++;
+            }
+            for(x=strlen(res[i])-1,k=0;x>=0;x--,k++)
+                c[k]=res[i][x];
+            c[x]='\0';
+            strcpy(res[i],c);
+            x=0;
+            while(x<500)
+            {
+                c[x]='\0';
+                d[x]='\0';
+                x++;
+            }
+            for(k=0;k<i;k++)
+            {
+                res[i][j] = '0';
+                j++;
+            }
+        }
+        else
+        {
+            j=1;
+            res[i][0]='0';
+            for(k=0;k<i;k++,j++)
+                res[i][j] = '0';
+        }
+    }
+    char sum[1003];
+    for(x=0;x<1003;x++)
+        sum[x]='\0';
+    for(k=0,i=0,carry=0;k<strlen(b);k++,i=0,carry=0,interm=0)
+    {
+        strcpy(revres[k],res[k]);
+        for(x=(strlen(revres[k])-1),j=0;x>=0;x--,j++)
+            c[j]=revres[k][x];
+        c[j]='\0';
+        strcpy(revres[k],c);
+        x=0;
+        while(x<500)
+        {
+            c[x]='\0';
+            d[x]='\0';
+            x++;
+        }
+        max=strlen(sum)>strlen(revres[k])?strlen(sum):strlen(revres[k]);
+        while(i<max)
+        {
+            if(revres[k][i]=='\0')
+            {
+                i++;
+            }
+            else if(sum[i]=='\0')
+            {
+                interm = (revres[k][i]-'0') + carry;
+                sum[i] = (interm % 10) + '0';
+                carry = interm / 10;
+                i++;
+            }
+            else
+            {
+                interm = (sum[i]-'0') + (revres[k][i]-'0') + carry;
+                sum[i] = (interm % 10) + '0';
+                carry = interm / 10;
+                i++;
+            }
+        }
+        if(carry!=0)
+            sum[i] = carry + '0';
+    }
+    for(i=strlen(sum)-1,j=0;i>=0;i--,j++)
+        c[j]=sum[i];
+    c[j]='\0';
+    strcpy(sum,c);
+    int diff1,diff2;
+    diff1=strlen(sum)-strlen(op1);
+    diff2=strlen(sum)-strlen(op2)-1;
+    for(i=0;i<diff1;i++)
+        printf(" ");
+    printf("%s\n",op1);
+    for(i=0;i<diff2;i++)
+        printf(" ");
+    printf("*%s\n",op2);
+    if(strlen(op2)>1)
+    {
+        max=strlen(op1)>(strlen(op2)+1)?strlen(op1):(strlen(op2)+1);
+        for(i=0;i<(strlen(sum)-max);i++)
+            printf(" ");
+        for(i=0;i<max;i++)
+            printf("-");
+        printf("\n");
+        for(i=0;i<strlen(b);i++)
+        {
+            for(k=(strlen(res[i])-i);k<strlen(res[i]);k++)
+                res[i][k]=' ';
+        }
+        for(i=0;i<strlen(b);i++)
+        {
+            diff=strlen(sum)-strlen(res[i]);
+            for(k=0;k<diff;k++)
+                printf(" ");
+            printf("%s\n",res[i]);
+        }
+    }
+    for(i=0;i<strlen(sum);i++)
+        printf("-");
+    printf("\n%s\n\n",sum);
+    x=0;
+    while(x<500)
+    {
+        op1[x]='\0';
+        op2[x]='\0';
+        c[x]='\0';
+        d[x]='\0';
+        x++;
+    }
+}
+
+
